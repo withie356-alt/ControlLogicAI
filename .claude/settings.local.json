@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --version:*)",
+      "Bash(pnpm install)",
+      "Bash(pnpm dev)",
+      "Bash(pnpm add:*)",
+      "Bash(taskkill:*)",
+      "Bash(del \"C:\\Users\\이성규\\AppProduct\\logic app\\.next\\dev\\lock\")",
+      "Bash(powershell -Command \"Get-Process -Id 41276 | Stop-Process -Force\")",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
