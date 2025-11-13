@@ -5,16 +5,21 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search } from "lucide-react"
-import { SignalSearchResults } from "@/components/signal-search-results"
+import { SignalSearchResults, Signal } from "@/components/signal-search-results"
+import { SelectedSignalsList } from "@/components/selected-signals-list"
 
 const STORAGE_KEY = "signal-search-history"
 const MAX_HISTORY = 10
 
 export function SignalSearchInterface() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [searchType, setSearchType] = useState<"all" | "control" | "measurement">("all")
+  const [actualQuery, setActualQuery] = useState("") // 실제 검색된 쿼리
+  const [sourceFilter, setSourceFilter] = useState<"all" | "logic" | "pid" | "manual">("all")
   const [isSearching, setIsSearching] = useState(false)
   const [recentSearches, setRecentSearches] = useState<string[]>([])
+  const [selectedSignals, setSelectedSignals] = useState<Signal[]>([])
+  const [searchResults, setSearchResults] = useState<Signal[]>([])
+  const [searchError, setSearchError] = useState<string | null>(null)
 
   // Load search history from localStorage on mount
   useEffect(() => {
@@ -38,22 +43,83 @@ export function SignalSearchInterface() {
     }
   }
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!searchQuery.trim()) return
 
     setIsSearching(true)
+    setSearchError(null)
 
-    // Add to search history (remove duplicates and add to front)
-    const newHistory = [
-      searchQuery.trim(),
-      ...recentSearches.filter((term) => term !== searchQuery.trim()),
-    ].slice(0, MAX_HISTORY)
+    try {
+      // API 호출
+      const params = new URLSearchParams({
+        q: searchQuery.trim(),
+        source: sourceFilter,
+        limit: '500',
+      })
 
-    saveSearchHistory(newHistory)
+      const response = await fetch(`/api/tags/search?${params}`)
+      const data = await response.json()
 
-    // Simulate search
-    setTimeout(() => setIsSearching(false), 1000)
+      if (data.success) {
+        setSearchResults(data.signals || [])
+        setActualQuery(searchQuery.trim())
+
+        // Add to search history (remove duplicates and add to front)
+        const newHistory = [
+          searchQuery.trim(),
+          ...recentSearches.filter((term) => term !== searchQuery.trim()),
+        ].slice(0, MAX_HISTORY)
+
+        saveSearchHistory(newHistory)
+      } else {
+        setSearchError(data.error || '검색에 실패했습니다')
+        setSearchResults([])
+      }
+    } catch (error) {
+      console.error('Search error:', error)
+      setSearchError('검색 중 오류가 발생했습니다')
+      setSearchResults([])
+    } finally {
+      setIsSearching(false)
+    }
   }
+
+  // 검색 소스 필터 변경 시 자동으로 재검색
+  useEffect(() => {
+    if (actualQuery) {
+      // 필터 변경 시 재검색
+      const performSearch = async () => {
+        setIsSearching(true)
+        setSearchError(null)
+
+        try {
+          const params = new URLSearchParams({
+            q: actualQuery,
+            source: sourceFilter,
+            limit: '500',
+          })
+
+          const response = await fetch(`/api/tags/search?${params}`)
+          const data = await response.json()
+
+          if (data.success) {
+            setSearchResults(data.signals || [])
+          } else {
+            setSearchError(data.error || '검색에 실패했습니다')
+            setSearchResults([])
+          }
+        } catch (error) {
+          console.error('Search error:', error)
+          setSearchError('검색 중 오류가 발생했습니다')
+          setSearchResults([])
+        } finally {
+          setIsSearching(false)
+        }
+      }
+
+      performSearch()
+    }
+  }, [sourceFilter, actualQuery])
 
   const removeFromHistory = (term: string) => {
     const newHistory = recentSearches.filter((t) => t !== term)
@@ -62,6 +128,20 @@ export function SignalSearchInterface() {
 
   const clearAllHistory = () => {
     saveSearchHistory([])
+  }
+
+  const handleAddSignal = (signal: Signal) => {
+    if (!selectedSignals.find(s => s.id === signal.id)) {
+      setSelectedSignals([...selectedSignals, signal])
+    }
+  }
+
+  const handleRemoveSignal = (signalId: string) => {
+    setSelectedSignals(selectedSignals.filter(s => s.id !== signalId))
+  }
+
+  const handleClearAllSignals = () => {
+    setSelectedSignals([])
   }
 
   return (
@@ -116,13 +196,30 @@ export function SignalSearchInterface() {
         </div>
       )}
 
-      {/* Search Results - Always visible */}
-      <div className="flex-1 min-h-0">
-        <SignalSearchResults
-          query={searchQuery}
-          type={searchType}
-          onTypeChange={setSearchType}
-        />
+      {/* Two Column Layout: Search Results (Left) and Selected Signals (Right) */}
+      <div className="flex-1 min-h-0 grid grid-cols-5 gap-4">
+        {/* Left: Search Results (3/5 width) */}
+        <div className="col-span-3 min-h-0">
+          <SignalSearchResults
+            query={actualQuery}
+            results={searchResults}
+            sourceFilter={sourceFilter}
+            onSourceFilterChange={setSourceFilter}
+            onAddSignal={handleAddSignal}
+            selectedSignalIds={selectedSignals.map(s => s.id)}
+            isLoading={isSearching}
+            error={searchError}
+          />
+        </div>
+
+        {/* Right: Selected Signals (2/5 width) */}
+        <div className="col-span-2 min-h-0">
+          <SelectedSignalsList
+            selectedSignals={selectedSignals}
+            onRemove={handleRemoveSignal}
+            onClearAll={handleClearAllSignals}
+          />
+        </div>
       </div>
     </div>
   )

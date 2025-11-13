@@ -1,23 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm --version:*)",
-      "Bash(pnpm install)",
+      "Bash(bash -c:*)",
+      "Bash(curl:*)",
+      "Bash(nul)",
       "Bash(pnpm dev)",
-      "Bash(pnpm add:*)",
       "Bash(taskkill:*)",
-      "Bash(del \"C:\\Users\\이성규\\AppProduct\\logic app\\.next\\dev\\lock\")",
-      "Bash(powershell -Command \"Get-Process -Id 41276 | Stop-Process -Force\")",
-      "Bash(git init:*)",
-      "Bash(git remote add:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git branch:*)",
-      "Bash(git push:*)",
+      "Bash(rm:*)",
+      "Bash(echo:*)",
+      "Bash(C:Users이성규AppProductControlLogicAItest-payload.json)",
       "Bash(timeout:*)",
-      "Bash(del \"c:\\Users\\이성규\\AppProduct\\ControlLogicAI\\.next\\dev\\lock\")",
-      "Bash(powershell -Command \"Remove-Item -Path ''c:\\Users\\이성규\\AppProduct\\ControlLogicAI\\.next\\dev\\lock'' -Force\")",
-      "Bash(powershell -Command:*)"
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

@@ -6,7 +6,7 @@ import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
-import { Home, Search, FileText, MessageSquare, FolderOpen, ChevronLeft, Moon, Sun, LogOut, User } from "lucide-react"
+import { Home, Search, FileText, MessageSquare, FolderOpen, ChevronLeft, Moon, Sun, LogOut, User, Lightbulb } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { signOut } from "@/lib/supabase/auth"
@@ -48,7 +48,8 @@ export function AppHeader() {
 
   const navItems = [
     { href: "/", label: "홈", icon: Home },
-    { href: "/search", label: "신호 검색", icon: Search },
+    { href: "/improvement", label: "신호 분석 및 개선", icon: Lightbulb },
+    { href: "/search", label: "AI 어시스턴트", icon: MessageSquare },
     { href: "/reports", label: "리포트", icon: FolderOpen },
   ]
 

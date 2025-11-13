@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Send, Bot, User, Sparkles, FileText, TrendingUp } from "lucide-react"
+import { Send, Bot, User, Sparkles, FileText, TrendingUp, X, Trash2 } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 
 interface Message {
@@ -17,23 +17,47 @@ interface Message {
   sources?: string[]
 }
 
+interface ConversationHistory {
+  id: string
+  query: string
+  timestamp: Date
+}
+
 export function AiChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content:
-        "안녕하세요! 저는 ControlLogic AI Analyzer의 AI 어시스턴트입니다. 제어로직 분석, PID 튜닝, TRIP 조건, 트렌드 분석 등에 대해 질문해주세요.",
-      timestamp: new Date(),
-    },
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [history, setHistory] = useState<ConversationHistory[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  // 로컬스토리지에서 히스토리 로드
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('chat-history')
+    if (savedHistory) {
+      try {
+        const parsed = JSON.parse(savedHistory)
+        setHistory(parsed.map((item: any) => ({
+          ...item,
+          timestamp: new Date(item.timestamp)
+        })))
+      } catch (e) {
+        console.error('Failed to load history:', e)
+      }
+    }
+  }, [])
+
+  // 히스토리 저장
+  const saveHistory = (newHistory: ConversationHistory[]) => {
+    localStorage.setItem('chat-history', JSON.stringify(newHistory))
+    setHistory(newHistory)
+  }
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+      const lastMessage = scrollRef.current.lastElementChild
+      if (lastMessage) {
+        lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' })
+      }
     }
   }, [messages])
 
@@ -47,22 +71,63 @@ export function AiChatInterface() {
       timestamp: new Date(),
     }
 
+    // 히스토리에 추가
+    const newHistoryItem: ConversationHistory = {
+      id: Date.now().toString(),
+      query: inputValue,
+      timestamp: new Date()
+    }
+    const newHistory = [newHistoryItem, ...history].slice(0, 10) // 최대 10개 유지
+    saveHistory(newHistory)
+
     setMessages((prev) => [...prev, userMessage])
     setInputValue("")
     setIsLoading(true)
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // 실제 Miso AI API 호출
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            ...messages.map(m => ({ role: m.role, content: m.content })),
+            { role: 'user', content: userMessage.content }
+          ],
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'API 호출 실패')
+      }
+
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: generateMockResponse(inputValue),
+        content: data.message || '응답을 받을 수 없습니다.',
         timestamp: new Date(),
-        sources: ["운영 매뉴얼 3.2절", "P&ID 도면 A-123", "DCS 설정 가이드"],
+        sources: data.sources || [],
       }
+
       setMessages((prev) => [...prev, aiResponse])
+    } catch (error) {
+      console.error('AI response error:', error)
+
+      // 에러 발생 시 폴백 응답
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `죄송합니다. AI 응답 생성 중 오류가 발생했습니다.\n\n${error instanceof Error ? error.message : '알 수 없는 오류'}`,
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorResponse])
+    } finally {
       setIsLoading(false)
-    }, 1500)
+    }
   }
 
   const generateMockResponse = (query: string): string => {
@@ -116,26 +181,11 @@ export function AiChatInterface() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-      <Card className="flex flex-col h-[calc(100vh-220px)]">
-        <CardHeader className="border-b">
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <Bot className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <CardTitle>AI 어시스턴트</CardTitle>
-              <CardDescription>Miso RAG 기반 지능형 분석</CardDescription>
-            </div>
-            <Badge variant="outline" className="ml-auto">
-              <Sparkles className="h-3 w-3 mr-1" />
-              활성
-            </Badge>
-          </div>
-        </CardHeader>
-
-        <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-          <div className="space-y-4">
-            {messages.map((message) => (
+      <Card className="flex flex-col h-[calc(100vh-220px)] border-2">
+        <div className="flex-1 overflow-hidden relative">
+          <ScrollArea className="h-full w-full p-4">
+            <div className="space-y-4 pb-4" ref={scrollRef}>
+              {messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}
@@ -154,17 +204,44 @@ export function AiChatInterface() {
                       message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                     }`}
                   >
-                    <ReactMarkdown
-                      className="prose prose-sm dark:prose-invert max-w-none"
-                      components={{
-                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                        ul: ({ children }) => <ul className="mb-2 ml-4">{children}</ul>,
-                        ol: ({ children }) => <ol className="mb-2 ml-4">{children}</ol>,
-                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                      }}
-                    >
-                      {message.content}
-                    </ReactMarkdown>
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                          ul: ({ children }) => <ul className="mb-2 ml-4 list-disc">{children}</ul>,
+                          ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal">{children}</ol>,
+                          strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                          h1: ({ children }) => <h1 className="text-lg font-bold mt-4 mb-2">{children}</h1>,
+                          h2: ({ children }) => <h2 className="text-base font-bold mt-3 mb-2">{children}</h2>,
+                          h3: ({ children }) => <h3 className="text-sm font-bold mt-2 mb-1">{children}</h3>,
+                          table: ({ children }) => (
+                            <div className="overflow-x-auto my-2">
+                              <table className="min-w-full divide-y divide-border border border-border">
+                                {children}
+                              </table>
+                            </div>
+                          ),
+                          thead: ({ children }) => <thead className="bg-muted">{children}</thead>,
+                          tbody: ({ children }) => <tbody className="divide-y divide-border">{children}</tbody>,
+                          tr: ({ children }) => <tr>{children}</tr>,
+                          th: ({ children }) => (
+                            <th className="px-3 py-2 text-left text-xs font-semibold">
+                              {children}
+                            </th>
+                          ),
+                          td: ({ children }) => (
+                            <td className="px-3 py-2 text-xs">
+                              {children}
+                            </td>
+                          ),
+                          img: ({ src, alt }) => (
+                            <img src={src} alt={alt} className="max-w-full h-auto rounded-md my-2" />
+                          ),
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
                   </div>
 
                   {message.sources && (
@@ -210,23 +287,25 @@ export function AiChatInterface() {
                 </div>
               </div>
             )}
-          </div>
-        </ScrollArea>
+            </div>
+          </ScrollArea>
+        </div>
 
-        <CardContent className="border-t p-4">
+        <div className="border-t bg-muted/30 p-4 flex-none">
           <div className="flex gap-2">
             <Input
-              placeholder="질문을 입력하세요..."
+              placeholder="메시지를 입력하세요..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               disabled={isLoading}
+              className="bg-background"
             />
-            <Button onClick={handleSend} disabled={isLoading || !inputValue.trim()}>
+            <Button onClick={handleSend} disabled={isLoading || !inputValue.trim()} size="icon">
               <Send className="h-4 w-4" />
             </Button>
           </div>
-        </CardContent>
+        </div>
       </Card>
 
       <div className="space-y-4">
@@ -240,10 +319,10 @@ export function AiChatInterface() {
               <Button
                 key={idx}
                 variant="outline"
-                className="w-full justify-start text-left h-auto py-3 px-3 bg-transparent"
+                className="w-full justify-start text-left h-auto py-2 px-3 bg-transparent hover:bg-accent/50"
                 onClick={() => setInputValue(question)}
               >
-                <span className="text-sm line-clamp-2">{question}</span>
+                <span className="text-xs leading-relaxed whitespace-normal">{question}</span>
               </Button>
             ))}
           </CardContent>
@@ -251,31 +330,55 @@ export function AiChatInterface() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">분석 기능</CardTitle>
-            <CardDescription>AI가 지원하는 기능들</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">과거 질문</CardTitle>
+                <CardDescription>최근 대화 내역</CardDescription>
+              </div>
+              {history.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => saveHistory([])}
+                  className="h-8 text-xs text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-3 w-3 mr-1" />
+                  전체 삭제
+                </Button>
+              )}
+            </div>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-2 text-sm">
-              <TrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium">트렌드 분석</p>
-                <p className="text-xs text-muted-foreground">이상 패턴 감지 및 예측</p>
+          <CardContent className="space-y-2">
+            {history.length === 0 ? (
+              <div className="text-center py-4 text-sm text-muted-foreground">
+                아직 대화 내역이 없습니다
               </div>
-            </div>
-            <div className="flex items-start gap-2 text-sm">
-              <FileText className="h-4 w-4 text-accent mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium">문서 검색</p>
-                <p className="text-xs text-muted-foreground">운영 매뉴얼 및 도면 참조</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 text-sm">
-              <Sparkles className="h-4 w-4 text-chart-2 mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium">개선 제안</p>
-                <p className="text-xs text-muted-foreground">AI 기반 최적화 방안</p>
-              </div>
-            </div>
+            ) : (
+              history.slice(0, 4).map((item) => (
+                <div
+                  key={item.id}
+                  className="group flex items-center gap-2 p-2 rounded-md hover:bg-accent/30 transition-colors"
+                >
+                  <button
+                    onClick={() => setInputValue(item.query)}
+                    className="flex-1 text-left text-xs text-muted-foreground hover:text-foreground line-clamp-2 leading-relaxed"
+                  >
+                    {item.query}
+                  </button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const newHistory = history.filter(h => h.id !== item.id)
+                      saveHistory(newHistory)
+                    }}
+                    className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

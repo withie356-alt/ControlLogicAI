@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { signIn } from "@/lib/supabase/auth"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
-import { Loader2, Zap, Settings, Activity, BarChart3, Search, FolderOpen, ChevronRight, Clock, TrendingUp } from "lucide-react"
+import { Loader2, Zap, Settings, Activity, BarChart3, Search, FolderOpen, ChevronRight, Clock, TrendingUp, Lightbulb, MessageSquare } from "lucide-react"
 import { AppHeader } from "@/components/app-header"
 import { Badge } from "@/components/ui/badge"
 import { CardDescription } from "@/components/ui/card"
@@ -101,21 +101,39 @@ export default function HomePage() {
 
             {/* Main Action Buttons - Large */}
             <div className="flex-none">
-              <div className="grid gap-4 md:grid-cols-2">
-                {/* Signal Search Button */}
+              <div className="grid gap-4 md:grid-cols-3">
+                {/* Signal Analysis & Improvement Button */}
+                <Link href="/improvement" className="group">
+                  <Card className="relative overflow-hidden hover:border-orange-500 hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-300 cursor-pointer h-full bg-gradient-to-br from-orange-500/10 via-card to-card border-2 active:scale-95">
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
+                    <CardHeader className="relative p-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-xl shadow-orange-500/30">
+                          <Lightbulb className="h-7 w-7 text-white" />
+                        </div>
+                        <ChevronRight className="h-7 w-7 text-muted-foreground group-hover:text-orange-500 group-hover:translate-x-2 transition-all duration-300" />
+                      </div>
+                      <CardTitle className="text-2xl font-bold mb-2 group-hover:text-orange-500 transition-colors">신호 분석 및 개선</CardTitle>
+                      <CardDescription className="text-sm">개선하고자 하는 내용을 설명하면 AI가 분석하고 개선안을 제시합니다</CardDescription>
+                    </CardHeader>
+                  </Card>
+                </Link>
+
+                {/* AI Assistant Button */}
                 <Link href="/search" className="group">
                   <Card className="relative overflow-hidden hover:border-primary hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 cursor-pointer h-full bg-gradient-to-br from-primary/10 via-card to-card border-2 active:scale-95">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
-                    <CardHeader className="relative p-8">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-xl shadow-primary/30">
-                          <Search className="h-8 w-8 text-white" />
+                    <CardHeader className="relative p-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-xl shadow-primary/30">
+                          <MessageSquare className="h-7 w-7 text-white" />
                         </div>
-                        <ChevronRight className="h-8 w-8 text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all duration-300" />
+                        <ChevronRight className="h-7 w-7 text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all duration-300" />
                       </div>
-                      <CardTitle className="text-3xl font-bold mb-2 group-hover:text-primary transition-colors">신호 검색 및 분석</CardTitle>
-                      <CardDescription className="text-base">제어 및 계측 신호를 검색하고 단계별 워크플로우로 상세 분석을 시작하세요</CardDescription>
+                      <CardTitle className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">AI 어시스턴트</CardTitle>
+                      <CardDescription className="text-sm">Miso RAG 기반 지능형 분석으로 제어로직을 최적화하세요</CardDescription>
                     </CardHeader>
                   </Card>
                 </Link>
@@ -125,15 +143,15 @@ export default function HomePage() {
                   <Card className="relative overflow-hidden hover:border-chart-3 hover:shadow-2xl hover:shadow-chart-3/30 transition-all duration-300 cursor-pointer h-full bg-gradient-to-br from-chart-3/10 via-card to-card border-2 active:scale-95">
                     <div className="absolute inset-0 bg-gradient-to-br from-chart-3/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="absolute top-0 right-0 w-32 h-32 bg-chart-3/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
-                    <CardHeader className="relative p-8">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-chart-3 to-chart-3/80 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-xl shadow-chart-3/30">
-                          <FolderOpen className="h-8 w-8 text-white" />
+                    <CardHeader className="relative p-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-chart-3 to-chart-3/80 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-xl shadow-chart-3/30">
+                          <FolderOpen className="h-7 w-7 text-white" />
                         </div>
-                        <ChevronRight className="h-8 w-8 text-muted-foreground group-hover:text-chart-3 group-hover:translate-x-2 transition-all duration-300" />
+                        <ChevronRight className="h-7 w-7 text-muted-foreground group-hover:text-chart-3 group-hover:translate-x-2 transition-all duration-300" />
                       </div>
-                      <CardTitle className="text-3xl font-bold mb-2 group-hover:text-chart-3 transition-colors">분석 리포트</CardTitle>
-                      <CardDescription className="text-base">완료된 분석 결과를 확인하고 상세 리포트 및 PDF를 생성하세요</CardDescription>
+                      <CardTitle className="text-2xl font-bold mb-2 group-hover:text-chart-3 transition-colors">분석 리포트</CardTitle>
+                      <CardDescription className="text-sm">완료된 분석 결과를 확인하고 PDF를 생성하세요</CardDescription>
                     </CardHeader>
                   </Card>
                 </Link>
