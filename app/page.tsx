@@ -31,10 +31,16 @@ export default function HomePage() {
     const supabase = createClient()
 
     // 초기 사용자 상태 확인
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      setChecking(false)
-    })
+    supabase.auth.getUser()
+      .then(({ data: { user } }) => {
+        setUser(user)
+        setChecking(false)
+      })
+      .catch((error) => {
+        console.error('Failed to get user:', error)
+        setUser(null)
+        setChecking(false)
+      })
 
     // 저장된 이메일 불러오기
     const savedEmail = localStorage.getItem("rememberedEmail")
