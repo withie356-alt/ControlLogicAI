@@ -117,7 +117,10 @@ export function SignalSearchResults({ query, type, onTypeChange }: SignalSearchR
                       </span>
                     </div>
                     <Link href={`/analysis/${signal.id}`}>
-                      <Button size="sm" className="shrink-0 h-8 text-xs">
+                      <Button
+                        size="sm"
+                        className="shrink-0 h-8 text-xs shadow-md hover:shadow-lg active:shadow-sm transition-all duration-200 hover:scale-105 active:scale-95"
+                      >
                         분석 시작
                         <ArrowRight className="ml-1 h-4 w-4" />
                       </Button>

@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { MermaidDiagram } from "@/components/mermaid-diagram"
 import {
   Lightbulb,
   GitBranch,
@@ -10,6 +11,9 @@ import {
   TrendingUp,
   Wrench,
   AlertTriangle,
+  GitCompare,
+  XCircle,
+  CheckCircle,
 } from "lucide-react"
 
 interface ImprovementStepProps {
@@ -172,6 +176,64 @@ export function ImprovementStep({ signalId }: ImprovementStepProps) {
     },
   ]
 
+  // 로직 수정 전/후 비교 데이터
+  const logicComparisonData = {
+    before: {
+      title: "수정 전 로직",
+      code: `IF 온도 > 550°C THEN
+  댐퍼 = 0% (완전 닫기)
+ELSE IF 온도 < 500°C THEN
+  댐퍼 = 100% (완전 열기)
+ELSE
+  댐퍼 = 현재값 유지
+END IF`,
+      issues: [
+        "급격한 변화로 인한 설비 손상 위험",
+        "센서 고장 시 대응 불가",
+        "On/Off 제어로 불안정",
+      ],
+      mermaid: `flowchart TD
+    A[온도 센서 입력] --> B{온도 > 550°C?}
+    B -->|Yes| C[댐퍼 닫기 0%]
+    B -->|No| D{온도 < 500°C?}
+    D -->|Yes| E[댐퍼 열기 100%]
+    D -->|No| F[현재 상태 유지]
+
+    style C fill:#ef4444,stroke:#991b1b,color:#fff
+    style E fill:#ef4444,stroke:#991b1b,color:#fff
+    style F fill:#94a3b8,stroke:#475569,color:#fff`,
+    },
+    after: {
+      title: "수정 후 로직",
+      code: `센서1, 센서2 평균값 사용
+IF 온도 > 530°C THEN
+  댐퍼 = 댐퍼 - 5%/분 (서서히 닫기)
+ELSE IF 온도 < 480°C THEN
+  댐퍼 = 댐퍼 + 5%/분 (서서히 열기)
+ELSE
+  PID 제어 (Kp=3.5, Ki=1.5, Kd=0.3)
+END IF`,
+      improvements: [
+        "센서 이중화로 신뢰성 향상",
+        "완만한 변화로 설비 보호",
+        "PID 제어로 안정성 개선",
+      ],
+      mermaid: `flowchart TD
+    A[온도 센서1] --> X[센서 이중화 검증]
+    B[온도 센서2] --> X
+    X --> C{온도 > 530°C?}
+    C -->|Yes| D[댐퍼 서서히 닫기<br/>-5%/분]
+    C -->|No| E{온도 < 480°C?}
+    E -->|Yes| F[댐퍼 서서히 열기<br/>+5%/분]
+    E -->|No| G[PID 제어<br/>Kp=3.5, Ki=1.5, Kd=0.3]
+
+    style X fill:#10b981,stroke:#047857,color:#fff
+    style D fill:#3b82f6,stroke:#1d4ed8,color:#fff
+    style F fill:#3b82f6,stroke:#1d4ed8,color:#fff
+    style G fill:#10b981,stroke:#047857,color:#fff`,
+    },
+  }
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
@@ -198,7 +260,7 @@ export function ImprovementStep({ signalId }: ImprovementStepProps) {
         <CardContent className="flex-1 min-h-0 overflow-y-auto scrollbar-thin p-6">
           <div className="space-y-8">
 
-            {/* 전체적인 분석결과 */}
+            {/* 전체적인 분석결과 - 서술식 */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b-2 border-primary">
                 <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -207,81 +269,153 @@ export function ImprovementStep({ signalId }: ImprovementStepProps) {
                 <h2 className="text-xl font-bold text-primary">전체적인 분석결과</h2>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-chart-2/10 flex items-center justify-center shrink-0">
-                        <GitBranch className="h-5 w-5 text-chart-2" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold mb-2">조작 절차</h4>
-                        <p className="text-sm text-muted-foreground">4단계 운전 프로세스 및 비상 조치 가이드</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+                <CardContent className="p-6">
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <div className="space-y-4 text-sm leading-relaxed">
+                      <p className="text-foreground">
+                        FCZ5202A 댐퍼 제어 시스템에 대한 종합 분석 결과, 전반적인 제어 성능은 양호한 수준으로 평가되나
+                        몇 가지 개선이 필요한 영역이 확인되었습니다. 현재 시스템은 안정적으로 운영되고 있으며,
+                        2차 과열기 온도 제어에 필수적인 역할을 수행하고 있습니다.
+                      </p>
 
-                <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <Settings className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold mb-2">설비 개선</h4>
-                        <p className="text-sm text-muted-foreground">3건의 개선 제안 (우선순위: 높음 1건, 중간 2건)</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      <p className="text-foreground">
+                        <strong className="text-primary">제어 성능 측면에서</strong> PID 파라미터 튜닝을 통해 응답 속도를 약 30% 개선할 수 있는
+                        여지가 있으며, 현재 8%의 오버슈트를 3%로 감소시킬 수 있습니다. 권장 파라미터는 Kp 3.5, Ki 1.5, Kd 0.3으로
+                        설정 시 정상상태 오차를 ±0.5% 이내로 유지할 수 있습니다. 이러한 튜닝은 부하 변동 시 온도 안정성을
+                        크게 향상시킬 것으로 예상됩니다.
+                      </p>
 
-                <Card className="border-accent/30 bg-gradient-to-br from-accent/5 to-transparent">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
-                        <TrendingUp className="h-5 w-5 text-accent" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold mb-2">PID 튜닝</h4>
-                        <p className="text-sm text-muted-foreground">응답 시간 30% 개선 가능 (180초 → 126초)</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      <p className="text-foreground">
+                        <strong className="text-chart-2">설비 신뢰성 향상을 위해</strong> 댐퍼 위치 센서의 이중화 구성을 우선적으로
+                        검토할 것을 권장합니다. 현재 단일 센서 구성으로 인해 센서 고장 시 제어 불가 상황이 발생할 수 있습니다.
+                        또한 Spray 수 압력 트랜스미터의 노후화가 진행되고 있어 교체 시기를 검토해야 하며,
+                        댐퍼 구동기에 대한 정밀 진단을 통해 기계적 마모 상태를 점검할 필요가 있습니다.
+                      </p>
 
-                <Card className="border-destructive/30 bg-gradient-to-br from-destructive/5 to-transparent">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
-                        <ShieldAlert className="h-5 w-5 text-destructive" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold mb-2">안전 주의사항</h4>
-                        <p className="text-sm text-muted-foreground">3건의 필수 준수사항 (매우 높음 1건, 높음 2건)</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+                      <p className="text-foreground">
+                        <strong className="text-destructive">안전 운전 측면에서</strong> 과열증기 온도는 절대 550°C를 초과해서는 안 되며,
+                        Spray 수 압력은 항상 15bar 이상을 유지해야 합니다. 특히 출력 변화 시에는 5%/분 이하의
+                        완만한 변화율을 준수하여 급격한 온도 변화로 인한 설비 손상을 방지해야 합니다.
+                        이러한 안전 한계는 운전원 교육 시 반드시 숙지시켜야 할 핵심 사항입니다.
+                      </p>
 
-              <Card className="border-chart-4/30 bg-gradient-to-br from-chart-4/5 to-transparent">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-chart-4/10 flex items-center justify-center shrink-0">
-                      <Wrench className="h-5 w-5 text-chart-4" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold mb-2">유지보수 계획</h4>
-                      <p className="text-sm text-muted-foreground">4건의 정기 점검 일정 (다음 예정: 센서 교정 2025-02-15)</p>
+                      <p className="text-foreground">
+                        <strong className="text-chart-4">유지보수 계획으로는</strong> 센서 교정을 6개월 주기로 실시하고(다음 예정일: 2025-07-15),
+                        댐퍼 작동 테스트는 3개월마다 수행할 것을 권장합니다. DCS 로직 백업은 매월 실시하여
+                        시스템 복구 대비를 강화하고, 배선 및 접속부 점검은 연 1회 실시하여 전기적 이상을
+                        사전에 예방해야 합니다.
+                      </p>
+
+                      <p className="text-muted-foreground italic border-l-4 border-primary pl-4 mt-6">
+                        종합적으로 현재 시스템은 안정적으로 운영되고 있으나, 위에서 언급한 개선사항들을 단계적으로
+                        적용할 경우 제어 성능, 신뢰성, 안전성 모든 측면에서 현저한 향상을 기대할 수 있습니다.
+                        특히 센서 이중화와 PID 튜닝은 우선순위가 높은 항목으로 조기 시행을 권장합니다.
+                      </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
+            {/* 로직 수정 전/후 비교 */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b-2 border-accent">
+                <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <GitCompare className="h-4 w-4 text-accent" />
+                </div>
+                <h2 className="text-xl font-bold text-accent">로직 수정 전/후 비교</h2>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6" style={{ display: 'grid', gridAutoRows: '1fr' }}>
+                {/* 수정 전 로직 */}
+                <Card className="border-destructive/30 flex flex-col">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <XCircle className="h-5 w-5 text-destructive" />
+                      {logicComparisonData.before.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 flex-1 flex flex-col">
+                    {/* 텍스트 기반 로직 */}
+                    <div>
+                      <h4 className="text-sm font-semibold mb-2">제어 로직</h4>
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <pre className="text-xs font-mono whitespace-pre-wrap">
+                          {logicComparisonData.before.code}
+                        </pre>
+                      </div>
+                    </div>
+
+                    {/* Mermaid 다이어그램 */}
+                    <div className="flex-1 min-h-[250px]">
+                      <h4 className="text-sm font-semibold mb-2">흐름도</h4>
+                      <div className="bg-muted/30 p-4 rounded-lg h-full flex items-center justify-center">
+                        <MermaidDiagram chart={logicComparisonData.before.mermaid} />
+                      </div>
+                    </div>
+
+                    {/* 문제점 */}
+                    <div>
+                      <Badge variant="destructive">문제점</Badge>
+                      <ul className="mt-2 space-y-1">
+                        {logicComparisonData.before.issues.map((issue, idx) => (
+                          <li key={idx} className="text-sm flex items-start gap-2">
+                            <span className="text-destructive mt-1">•</span>
+                            <span>{issue}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 수정 후 로직 */}
+                <Card className="border-primary/30 flex flex-col">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-primary" />
+                      {logicComparisonData.after.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 flex-1 flex flex-col">
+                    {/* 텍스트 기반 로직 */}
+                    <div>
+                      <h4 className="text-sm font-semibold mb-2">제어 로직</h4>
+                      <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                        <pre className="text-xs font-mono whitespace-pre-wrap text-primary">
+                          {logicComparisonData.after.code}
+                        </pre>
+                      </div>
+                    </div>
+
+                    {/* Mermaid 다이어그램 */}
+                    <div className="flex-1 min-h-[250px]">
+                      <h4 className="text-sm font-semibold mb-2">흐름도</h4>
+                      <div className="bg-muted/30 p-4 rounded-lg h-full flex items-center justify-center">
+                        <MermaidDiagram chart={logicComparisonData.after.mermaid} />
+                      </div>
+                    </div>
+
+                    {/* 개선점 */}
+                    <div>
+                      <Badge variant="default">개선점</Badge>
+                      <ul className="mt-2 space-y-1">
+                        {logicComparisonData.after.improvements.map((improvement, idx) => (
+                          <li key={idx} className="text-sm flex items-start gap-2">
+                            <span className="text-primary mt-1">✓</span>
+                            <span>{improvement}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
             {/* 세부적인 결과 */}
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div className="flex items-center gap-2 pb-2 border-b-2 border-chart-2">
                 <div className="h-8 w-8 rounded-lg bg-chart-2/10 flex items-center justify-center">
                   <Settings className="h-4 w-4 text-chart-2" />
@@ -301,7 +435,7 @@ export function ImprovementStep({ signalId }: ImprovementStepProps) {
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="grid md:grid-cols-2 gap-4">
                 {valveOperationFlow.steps.map((step) => (
                   <Card key={step.step}>
                     <CardContent className="p-4">
@@ -339,7 +473,7 @@ export function ImprovementStep({ signalId }: ImprovementStepProps) {
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="grid md:grid-cols-2 gap-4">
                 {equipmentImprovements.map((improvement) => (
                   <Card key={improvement.id}>
                     <CardContent className="p-4">
@@ -477,7 +611,7 @@ export function ImprovementStep({ signalId }: ImprovementStepProps) {
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="grid md:grid-cols-2 gap-4">
                 {safetyWarnings.map((warning, idx) => (
                   <Card key={idx} className={warning.level === "critical" ? "border-destructive" : ""}>
                     <CardContent className="p-4">
@@ -533,7 +667,7 @@ export function ImprovementStep({ signalId }: ImprovementStepProps) {
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="grid md:grid-cols-2 gap-4">
                 {maintenanceRecommendations.map((task, idx) => (
                   <Card key={idx}>
                     <CardContent className="p-4">
@@ -554,8 +688,8 @@ export function ImprovementStep({ signalId }: ImprovementStepProps) {
                 ))}
               </div>
             </div>
+            </div>
           </div>
-        </div>
         </CardContent>
       </Card>
     </div>

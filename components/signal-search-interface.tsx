@@ -78,7 +78,12 @@ export function SignalSearchInterface() {
             className="pl-12 h-12 text-base"
           />
         </div>
-        <Button onClick={handleSearch} disabled={isSearching} size="lg" className="px-8 h-12">
+        <Button
+          onClick={handleSearch}
+          disabled={isSearching}
+          size="lg"
+          className="px-8 h-12 shadow-md hover:shadow-lg active:shadow-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+        >
           {isSearching ? "검색 중..." : "검색"}
         </Button>
       </div>
@@ -94,7 +99,7 @@ export function SignalSearchInterface() {
                 variant="outline"
                 size="sm"
                 onClick={() => setSearchQuery(term)}
-                className="hover:bg-chart-3/30 hover:text-chart-3 hover:border-chart-3 h-7 text-xs bg-background transition-all"
+                className="hover:bg-chart-3/30 hover:text-chart-3 hover:border-chart-3 h-7 text-xs bg-background transition-all duration-200 active:scale-95 active:bg-chart-3/40"
               >
                 {term}
               </Button>
@@ -104,7 +109,7 @@ export function SignalSearchInterface() {
             variant="ghost"
             size="sm"
             onClick={clearAllHistory}
-            className="h-7 text-xs text-muted-foreground hover:text-destructive whitespace-nowrap"
+            className="h-7 text-xs text-muted-foreground hover:text-destructive whitespace-nowrap transition-all duration-200 active:scale-95 active:bg-destructive/10"
           >
             전체 삭제
           </Button>

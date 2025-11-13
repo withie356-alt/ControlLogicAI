@@ -155,7 +155,7 @@ export function AnalysisWorkflow({ signalId }: AnalysisWorkflowProps) {
                 size="sm"
                 onClick={handlePrevious}
                 disabled={currentStep === 1 || isSaving}
-                className="shadow-sm"
+                className="shadow-md hover:shadow-lg active:shadow-sm transition-all duration-200 hover:scale-105 active:scale-95 active:bg-muted"
               >
                 <ChevronLeft className="mr-1 h-4 w-4" />
                 이전
@@ -165,7 +165,7 @@ export function AnalysisWorkflow({ signalId }: AnalysisWorkflowProps) {
                   size="sm"
                   onClick={handleOpenSaveDialog}
                   disabled={isSaving}
-                  className="shadow-sm"
+                  className="shadow-lg hover:shadow-xl active:shadow-md transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   <Save className="mr-2 h-4 w-4" />
                   분석 완료 및 저장
@@ -174,7 +174,7 @@ export function AnalysisWorkflow({ signalId }: AnalysisWorkflowProps) {
                 <Button
                   size="sm"
                   onClick={handleNext}
-                  className="shadow-sm"
+                  className="shadow-lg hover:shadow-xl active:shadow-md transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   다음
                   <ChevronRight className="ml-1 h-4 w-4" />
@@ -209,12 +209,12 @@ export function AnalysisWorkflow({ signalId }: AnalysisWorkflowProps) {
               <button
                 key={step.id}
                 onClick={() => setCurrentStep(step.id)}
-                className={`group text-left p-4 rounded-lg border-2 transition-all duration-200 ${
+                className={`group text-left p-4 rounded-lg border-2 transition-all duration-200 active:scale-[0.98] ${
                   currentStep === step.id
                     ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
                     : currentStep > step.id
-                      ? "border-green-500/50 bg-green-500/5 hover:shadow-md"
-                      : "border-border bg-card hover:border-primary/30 hover:shadow-md"
+                      ? "border-green-500/50 bg-green-500/5 hover:shadow-md active:bg-green-500/10"
+                      : "border-border bg-card hover:border-primary/30 hover:shadow-md active:bg-muted"
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -317,7 +317,7 @@ export function AnalysisWorkflow({ signalId }: AnalysisWorkflowProps) {
             <Button
               onClick={handleGeneratePdf}
               disabled={isGeneratingPdf || isSaving}
-              className="w-full"
+              className="w-full shadow-lg hover:shadow-xl active:shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
             >
               {isGeneratingPdf ? (
                 <>
@@ -338,7 +338,7 @@ export function AnalysisWorkflow({ signalId }: AnalysisWorkflowProps) {
                 setShowSaveDialog(false)
               }}
               disabled={isGeneratingPdf || isSaving}
-              className="w-full"
+              className="w-full shadow-md hover:shadow-lg active:shadow-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] active:bg-muted"
             >
               <Save className="h-4 w-4 mr-2" />
               {isSaving ? "저장 중..." : "저장만 하기"}
