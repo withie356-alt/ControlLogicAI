@@ -24,7 +24,14 @@ interface ConversationHistory {
 }
 
 export function AiChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "welcome-message",
+      role: "assistant",
+      content: "안녕하세요! 어떻게 도와드릴까요?\n\n제어로직, PID 튜닝, TRIP 조건 등에 대해 무엇이든 물어보세요. 😊",
+      timestamp: new Date(),
+    }
+  ])
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [history, setHistory] = useState<ConversationHistory[]>([])
